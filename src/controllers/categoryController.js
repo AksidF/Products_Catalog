@@ -3,6 +3,11 @@ const { Category } = require('../models');
 // Create Category
 exports.createCategory = async (req, res) => {
   try {
+    // Check if 'req.body' exists and has the expected structure
+    if (!req.body || !req.body.name) {
+      return res.status(400).json({ error: 'Name is required for creating a category.' });
+    }
+
     const { name } = req.body;
 
     const category = await Category.create({

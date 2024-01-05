@@ -12,6 +12,6 @@ router.put('/:id', categoryController.updateCategory);
 router.delete('/:id', categoryController.deleteCategory);
 
 // Get All Categories
-router.get('/', categoryController.getAllCategories);
+router.get('/all', categoryController.getAllCategories);
 
 module.exports = router;

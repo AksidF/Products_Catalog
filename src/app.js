@@ -16,6 +16,10 @@ app.use('/products', productRoutes);
 app.use('/categories', categoryRoutes); 
 app.use('/product-assets', productAssetRoutes);
 
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
 // Sync models with the database
 sequelize.sync({ alter: true }).then(() => {
   console.log('Database synced');

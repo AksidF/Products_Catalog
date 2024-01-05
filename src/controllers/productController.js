@@ -77,7 +77,7 @@ exports.deleteProduct = async (req, res) => {
     if (deletedRowCount === 0) {
       res.status(404).json({ error: 'Product not found' });
     } else {
-      res.status(204).send();
+      res.status(200).json({ message: 'Product deleted successfully' });
     }
   } catch (error) {
     console.error('Error deleting product:', error);
