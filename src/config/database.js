@@ -1,6 +1,6 @@
 module.exports = {
-  DB_NAME: 'products_data',
-  DB_USER: 'root',
-  DB_PASSWORD: '',
-  DB_HOST: 'localhost',
+  DB_NAME: 'YOUR_DB_NAME',
+  DB_USER: 'YOUR_DB_USERNAME',
+  DB_PASSWORD: 'YOUR_DB_PASSWORD',
+  DB_HOST: 'YOUR_DB_HOST',
 };
