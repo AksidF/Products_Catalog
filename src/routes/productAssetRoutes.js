@@ -12,6 +12,6 @@ router.put('/:id', productAssetController.updateProductAsset);
 router.delete('/:id', productAssetController.deleteProductAsset);
 
 // Get All Product Assets
-router.get('/', productAssetController.getAllProductAssets);
+router.get('/all', productAssetController.getAllProductAssets);
 
 module.exports = router;

@@ -17,7 +17,7 @@ app.use('/categories', categoryRoutes);
 app.use('/product-assets', productAssetRoutes);
 
 // Sync models with the database
-sequelize.sync({ alter: false }).then(() => {
+sequelize.sync({ alter: true }).then(() => {
   console.log('Database synced');
 });
 

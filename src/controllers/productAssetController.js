@@ -125,10 +125,13 @@ exports.deleteProductAsset = async (req, res) => {
   }
 };
 
-// Get All Product Assets
+// Get all Product Assets with Product names
 exports.getAllProductAssets = async (req, res) => {
   try {
-    const productAssets = await ProductAsset.findAll();
+    const productAssets = await ProductAsset.findAll({
+      include: [{ model: Product, attributes: ['name'] }],
+    });
+
     res.status(200).json(productAssets);
   } catch (error) {
     console.error('Error retrieving product assets:', error);
