@@ -10,11 +10,15 @@ module.exports = (sequelize, DataTypes) => {
         unique: true,
       },
       price: {
-        type: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.DECIMAL(10),
         allowNull: false,
         validate: {
           min: 0,
         },
+      },
+      CategoryId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
       },
     });
   

@@ -4,6 +4,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    ProductId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   });
 
   return ProductAsset;

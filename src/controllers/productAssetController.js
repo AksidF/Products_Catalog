@@ -1,55 +1,96 @@
-const multer = require('multer');
+const fs = require('fs/promises');
 const path = require('path');
-const { ProductAsset } = require('../models');
+const { Product, ProductAsset } = require('../models');
 
-// Set up Multer storage configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/images'); // Specify the destination folder
-  },
-  filename: (req, file, cb) => {
-    const fileName = `${file.originalname}`;
-    cb(null, fileName);
-  },
-});
-
-const upload = multer({ storage });
 
 // Create Product Asset with image upload
-exports.createProductAsset = upload.single('image'), async (req, res) => {
-  console.log('Received request:', req.file);
+exports.createProductAsset = async (req, res) => {
   try {
-    const { product_id } = req.body;
+    const { ProductId } = req.body;
 
-    // File information is available in req.file
-    const image = req.file.filename;
+    // Check if the ProductId is valid
+    const existingProduct = await Product.findByPk(ProductId);
+    if (!existingProduct) {
+      return res.status(404).json({ error: 'ProductId not found' });
+    }
 
-    const productAsset = await ProductAsset.create({
-      product_id,
-      image,
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).json({ error: 'No files were uploaded.' });
+    }
+
+    const image = req.files.image;
+    const fileName = `${Date.now()}-${image.name}`;
+
+    // Move the file to the desired destination
+    image.mv(`public/images/${fileName}`, (err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      // Create the ProductAsset record in the database
+      ProductAsset.create({
+        ProductId,
+        image: fileName,
+      })
+        .then((productAsset) => {
+          res.status(201).json(productAsset);
+        })
+        .catch((error) => {
+          console.error('Error creating product asset:', error);
+          res.status(500).json({ error: 'Internal Server Error' });
+        });
     });
-
-    res.status(201).json(productAsset);
   } catch (error) {
     console.error('Error creating product asset:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
-// Update Product Asset
+// Update Product Asset with image upload
 exports.updateProductAsset = async (req, res) => {
   try {
     const productAssetId = req.params.id;
-    const [updatedRowsCount, updatedProductAssets] = await ProductAsset.update(req.body, {
-      where: { id: productAssetId },
-      returning: true,
-    });
+    const existingProductAsset = await ProductAsset.findByPk(productAssetId);
 
-    if (updatedRowsCount === 0) {
-      res.status(404).json({ error: 'Product asset not found' });
-    } else {
-      res.status(200).json(updatedProductAssets[0]);
+    if (!existingProductAsset) {
+      return res.status(404).json({ error: 'Product asset not found' });
     }
+
+    const { ProductId } = req.body;
+
+    // Check if the ProductId is valid
+    if (ProductId) {
+      const existingProduct = await Product.findByPk(ProductId);
+      if (!existingProduct) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+    }
+
+    // Check if there's a file in the request
+    if (req.files && req.files.image) {
+      const image = req.files.image;
+      const fileName = `${Date.now()}-${image.name}`;
+
+      
+      await image.mv(`public/images/${fileName}`);
+      
+      // Delete the existing image file
+      const imagePath = path.join('public/images', existingProductAsset.image);
+      await fs.unlink(imagePath);
+
+      // Update the product asset with the new image
+      await existingProductAsset.update({
+        ...req.body,
+        image: fileName,
+      });
+    } else {
+      // If no file is present, update other fields only
+      await existingProductAsset.update(req.body);
+    }
+
+    
+    const updatedProductAsset = await ProductAsset.findByPk(productAssetId);
+    res.status(200).json(updatedProductAsset);
   } catch (error) {
     console.error('Error updating product asset:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -60,15 +101,24 @@ exports.updateProductAsset = async (req, res) => {
 exports.deleteProductAsset = async (req, res) => {
   try {
     const productAssetId = req.params.id;
-    const deletedRowCount = await ProductAsset.destroy({
+
+    
+    const productAsset = await ProductAsset.findByPk(productAssetId);
+
+    if (!productAsset) {
+      return res.status(404).json({ error: 'Product asset not found' });
+    }
+
+    // Delete the associated image file
+    const imagePath = path.join('public/images', productAsset.image);
+    await fs.unlink(imagePath);
+
+    // Delete the product asset from the database
+    await ProductAsset.destroy({
       where: { id: productAssetId },
     });
 
-    if (deletedRowCount === 0) {
-      res.status(404).json({ error: 'Product asset not found' });
-    } else {
-      res.status(204).send();
-    }
+    res.status(200).json({ message: 'Asset deleted successfully' });
   } catch (error) {
     console.error('Error deleting product asset:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -85,3 +135,4 @@ exports.getAllProductAssets = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+

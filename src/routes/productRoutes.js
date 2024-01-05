@@ -6,15 +6,12 @@ const productController = require('../controllers/productController');
 router.post('/', productController.createProduct);
 
 // Get all Products with Categories and Assets
-router.get('/', productController.getAllProducts);
+router.get('/all', productController.getAllProducts);
 
 // Update Product
 router.put('/:id', productController.updateProduct);
 
 // Delete Product
 router.delete('/:id', productController.deleteProduct);
-
-// Get all Products with Categories and Assets, sorted by price
-router.get('/sorted-by-price', productController.getAllProductsSortedByPrice);
 
 module.exports = router;
